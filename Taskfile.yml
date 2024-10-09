@@ -1,0 +1,11 @@
+version: "3"
+
+tasks:
+  run:
+    desc: "Runs the server and reloads on every file change"
+    cmds:
+      - air
+  kill:
+    desc: "Kills zombie processes"
+    cmds:
+      - kill -9 $(lsof -t -i:1234)
