@@ -15,6 +15,7 @@ func prepareRoutes(app *echo.Echo, db *sql.DB) {
 	app.GET("/", indexHandler.HandleIndexShow)
 
 	app.POST("/add-todo", indexHandler.HandleAddTodo)
+	app.POST("/toggle-todo-state", indexHandler.HandleToggleTodoState)
 }
 
 func main() {

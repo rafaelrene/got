@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rafaelrene/got/routes"
@@ -33,6 +32,26 @@ func (h IndexHandler) HandleAddTodo(c echo.Context) error {
 	return routes.Render(c, AddTodo(todo))
 }
 
+func (h IndexHandler) HandleToggleTodoState(c echo.Context) error {
+	id := c.FormValue("id")
+
+	if len(id) == 0 {
+		fmt.Fprintf(os.Stderr, "Provided `id` is empty string: %s\n", id)
+		os.Exit(1)
+	}
+
+	todo := h.fetchTodo(id)
+	todo.IsDone = !todo.IsDone
+
+	_, err := h.Db.Query("UPDATE todos SET is_done = ? WHERE id = ?", todo.IsDone, id)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error updating a TODO in database: %v\n", err)
+		os.Exit(1)
+	}
+
+	return routes.Render(c, RenderTodo(todo))
+}
+
 func (h IndexHandler) fetchAllTodos() []Todo {
 	rows, err := h.Db.Query("SELECT * FROM todos;")
 	if err != nil {
@@ -41,39 +60,23 @@ func (h IndexHandler) fetchAllTodos() []Todo {
 	}
 	defer rows.Close()
 
-	var todos []Todo
+	return ParseTodos(rows)
+}
 
-	for rows.Next() {
-		var todo Todo
-		var createdAt string
-		var updatedAt string
-
-		if err := rows.Scan(&todo.Id, &todo.Title, &todo.IsDone, &createdAt, &updatedAt); err != nil {
-			fmt.Fprintf(os.Stderr, "Error scanning row: %v\n", err)
-			os.Exit(1)
-		}
-
-		parsedCreatedAt, err := time.Parse(time.RFC3339, createdAt)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't parse created_at (%s): %v\n", createdAt, err)
-			os.Exit(1)
-		}
-		todo.CreatedAt = parsedCreatedAt
-
-		parsedUpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't parse updated_at (%s): %v\n", updatedAt, err)
-			os.Exit(1)
-		}
-		todo.UpdatedAt = parsedUpdatedAt
-
-		todos = append(todos, todo)
+func (h IndexHandler) fetchTodo(id string) Todo {
+	rows, err := h.Db.Query("SELECT * FROM todos WHERE id = ? LIMIT 1;", id)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to execute query: %v\n", err)
+		os.Exit(1)
 	}
+	defer rows.Close()
 
-	if err := rows.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error during rows iteration: %v\n", err)
+	todos := ParseTodos(rows)
+
+	if len(todos) == 0 {
+		fmt.Fprintf(os.Stderr, "Failed to find todo with id '%s': %v\n", id, err)
 		os.Exit(1)
 	}
 
-	return todos
+	return todos[0]
 }
