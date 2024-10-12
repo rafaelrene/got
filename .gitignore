@@ -1,3 +1,10 @@
 .air_tmp/
 .task/
+.db/
 node_modules/
+
+.env*
+
+static/output.css
+
+*_templ.go

@@ -1,9 +1,32 @@
 package index
 
+import "strconv"
 import "github.com/rafaelrene/got/routes/layout"
 
-templ Show() {
+templ Show(todos []Todo) {
   @layout.Base() {
-    <h1>Index</h1>
+    <input
+      class="new-todo text-2xl leading-[1.4em] w-full pl-[60px] p-4 placeholder:italic placeholder:text-[#000000] placeholder:text-opacity-40"
+      placeholder="What needs to be done?"
+      name="title"
+      autofocus
+      hx-post="/add-todo"
+    />
+
+    for _, todo := range todos {
+      @renderTodo(todo)
+    }
   }
+}
+
+templ AddTodo(todo Todo) {
+  @renderTodo(todo)   
+}
+
+templ renderTodo(todo Todo) {
+  <div>{todo.Id.String()}</div>
+  <div>{todo.Title}</div>
+  <div>{strconv.FormatBool(todo.IsDone)}</div>
+  <div>{todo.CreatedAt.String()}</div>
+  <div>{todo.UpdatedAt.String()}</div>
 }

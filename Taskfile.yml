@@ -1,5 +1,10 @@
 version: "3"
 
+env:
+  ENV: local
+
+dotenv: [".env", ".env.{{.ENV}}"]
+
 tasks:
   run:
     desc: "Runs the server and reloads on every file change"
