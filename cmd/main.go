@@ -5,12 +5,16 @@ import (
 	"github.com/rafaelrene/got/routes/index"
 )
 
+func prepareRoutes(app *echo.Echo) {
+	indexHandler := index.IndexHandler{}
+	app.GET("/", indexHandler.HandleIndexShow)
+}
+
 func main() {
 	app := echo.New()
 	app.Static("/static", "static")
 
-	indexHandler := index.IndexHandler{}
-	app.GET("/", indexHandler.HandleIndexShow)
+	prepareRoutes(app)
 
 	app.Logger.Fatal(app.Start(":1234"))
 }
