@@ -5,17 +5,22 @@ import "github.com/rafaelrene/got/routes/layout"
 
 templ Show(todos []Todo) {
   @layout.Base() {
-    <input
-      class="new-todo text-2xl leading-[1.4em] w-full pl-[60px] p-4 placeholder:italic placeholder:text-[#000000] placeholder:text-opacity-40"
-      placeholder="What needs to be done?"
-      name="title"
-      autofocus
-      hx-post="/add-todo"
-    />
+    <section class="flex gap-[30px] place-items-center bg-white text-2xl border-[#ededed] border-b-[1px] border-solid text-gray-400">
+      <div class="rotate-180 w-8 h-8 text-4xl">^</div>
+      <input
+        class="new-todo leading-[1.4em] w-full p-4 pl-0 placeholder:italic placeholder:text-[#000000] placeholder:text-opacity-40"
+        placeholder="What needs to be done?"
+        name="title"
+        autofocus
+        hx-post="/add-todo"
+      />
+    </section>
 
-    for _, todo := range todos {
-      @renderTodo(todo)
-    }
+    <ul class="flex flex-col">
+      for _, todo := range todos {
+        @renderTodo(todo)
+      }
+    </ul>
   }
 }
 
@@ -24,9 +29,20 @@ templ AddTodo(todo Todo) {
 }
 
 templ renderTodo(todo Todo) {
-  <div>{todo.Id.String()}</div>
-  <div>{todo.Title}</div>
-  <div>{strconv.FormatBool(todo.IsDone)}</div>
-  <div>{todo.CreatedAt.String()}</div>
-  <div>{todo.UpdatedAt.String()}</div>
+  <li
+    class="flex w-full gap-6 px-[5px] h-[58px] place-items-center border-[#ededed] border-b-[1px] border-solid bg-white group text-[#484848] text-2xl"
+    data-id={todo.Id.String()}
+    data-is-done={strconv.FormatBool(todo.IsDone)}
+    data-created-at={todo.CreatedAt.String()}
+    data-updated-at={todo.UpdatedAt.String()}
+  >
+    <input
+      class="w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px]"
+      type="checkbox"
+      value={todo.Id.String()}
+      if todo.IsDone { checked }
+    />
+    <div class="grow">{todo.Title}</div>
+    <button class="w-10 hidden group-hover:block">x</button>
+  </li>
 }
