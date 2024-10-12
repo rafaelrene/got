@@ -1,7 +1,11 @@
 package index
 
-import "strconv"
-import "github.com/rafaelrene/got/routes/layout"
+import (
+  "fmt"
+  "strconv"
+
+  "github.com/rafaelrene/got/routes/layout"
+)
 
 templ Show(todos []Todo) {
   @layout.Base() {
@@ -36,13 +40,23 @@ templ renderTodo(todo Todo) {
     data-created-at={todo.CreatedAt.String()}
     data-updated-at={todo.UpdatedAt.String()}
   >
-    <input
-      class={"w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px]", templ.KV("border-green-600 before:content-['✓'] before:text-green-600 before:text-2xl before:block before:text-center", todo.IsDone)}
-      type="checkbox"
-      value={todo.Id.String()}
-      if todo.IsDone { checked }
-    />
+    <input hidden name="id" value={todo.Id.String()} />
+    @RenderTodoInput(todo)
     <div class="grow">{todo.Title}</div>
     <button class="w-10 hidden group-hover:block">x</button>
   </li>
+}
+
+templ RenderTodoInput(todo Todo) {
+  <input
+    class={"w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px] cursor-pointer", templ.KV("border-green-600 before:content-['✓'] before:text-green-600 before:text-2xl before:block before:text-center", todo.IsDone)}
+    type="checkbox"
+    value={strconv.FormatBool(todo.IsDone)}
+    name="isDone"
+    hx-post="/toggle-todo-state"
+    hx-swap="outerHTML"
+    hx-trigger="click"
+    hx-vals={fmt.Sprintf("{%q: %q}", "id", todo.Id.String())}
+    if todo.IsDone { checked }
+  />
 }
