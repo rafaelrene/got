@@ -37,7 +37,7 @@ templ renderTodo(todo Todo) {
     data-updated-at={todo.UpdatedAt.String()}
   >
     <input
-      class="w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px]"
+      class={"w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px]", templ.KV("border-green-600 before:content-['✓'] before:text-green-600 before:text-2xl before:block before:text-center", todo.IsDone)}
       type="checkbox"
       value={todo.Id.String()}
       if todo.IsDone { checked }
