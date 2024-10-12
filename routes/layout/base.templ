@@ -7,9 +7,12 @@ templ Base() {
       <link rel="stylesheet" href="/static/output.css">
       <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
     </head>
-    <body>
-      <h1 class="text-9xl">Base</h1>
-      { children... }
-    </body>
+    <body class="bg-[#f5f5f5] font-main">
+      <div class="w-[550px] container mx-auto">
+        <h1 class="text-[#b83f45] text-[80px] text-center font-extralight">todos</h1>
+        <main>{children...}</main>
+        <footer class="mt-10">footer</footer>
+      </div>
+  </body>
   </html>
 }
