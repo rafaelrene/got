@@ -49,7 +49,7 @@ func (h IndexHandler) HandleToggleTodoState(c echo.Context) error {
 		os.Exit(1)
 	}
 
-	return routes.Render(c, RenderTodoInput(todo))
+	return routes.Render(c, RenderTodo(todo))
 }
 
 func (h IndexHandler) fetchAllTodos() []Todo {

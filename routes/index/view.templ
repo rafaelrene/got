@@ -22,41 +22,34 @@ templ Show(todos []Todo) {
 
     <ul class="flex flex-col">
       for _, todo := range todos {
-        @renderTodo(todo)
+        @RenderTodo(todo)
       }
     </ul>
   }
 }
 
 templ AddTodo(todo Todo) {
-  @renderTodo(todo)   
+  @RenderTodo(todo)   
 }
 
-templ renderTodo(todo Todo) {
+templ RenderTodo(todo Todo) {
   <li
     class="flex w-full gap-6 px-[5px] h-[58px] place-items-center border-[#ededed] border-b-[1px] border-solid bg-white group text-[#484848] text-2xl"
     data-id={todo.Id.String()}
-    data-is-done={strconv.FormatBool(todo.IsDone)}
-    data-created-at={todo.CreatedAt.String()}
-    data-updated-at={todo.UpdatedAt.String()}
   >
-    <input hidden name="id" value={todo.Id.String()} />
-    @RenderTodoInput(todo)
-    <div class="grow">{todo.Title}</div>
+    <input
+      class={"w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px] cursor-pointer", templ.KV("border-green-600 before:content-['✓'] before:text-green-600 before:text-2xl before:block before:text-center", todo.IsDone)}
+      type="checkbox"
+      value={strconv.FormatBool(todo.IsDone)}
+      name="isDone"
+      hx-post="/toggle-todo-state"
+      hx-swap="outerHTML"
+      hx-trigger="click"
+      hx-vals={fmt.Sprintf("{%q: %q}", "id", todo.Id.String())}
+      hx-target={fmt.Sprintf("li[data-id=%q]", todo.Id.String())}
+      if todo.IsDone { checked }
+    />
+    <div class={"grow", templ.KV("line-through text-gray-300", todo.IsDone)}>{todo.Title}</div>
     <button class="w-10 hidden group-hover:block">x</button>
   </li>
-}
-
-templ RenderTodoInput(todo Todo) {
-  <input
-    class={"w-8 h-8 appearance-none bg-white rounded-full border-gray-400 border-[1px] cursor-pointer", templ.KV("border-green-600 before:content-['✓'] before:text-green-600 before:text-2xl before:block before:text-center", todo.IsDone)}
-    type="checkbox"
-    value={strconv.FormatBool(todo.IsDone)}
-    name="isDone"
-    hx-post="/toggle-todo-state"
-    hx-swap="outerHTML"
-    hx-trigger="click"
-    hx-vals={fmt.Sprintf("{%q: %q}", "id", todo.Id.String())}
-    if todo.IsDone { checked }
-  />
 }
