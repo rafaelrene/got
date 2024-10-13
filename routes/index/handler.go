@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rafaelrene/got/routes"
@@ -34,22 +36,36 @@ func (h IndexHandler) HandleAddTodo(c echo.Context) error {
 
 func (h IndexHandler) HandleToggleTodoState(c echo.Context) error {
 	id := c.FormValue("id")
-
 	if len(id) == 0 {
 		fmt.Fprintf(os.Stderr, "Provided `id` is empty string: %s\n", id)
 		os.Exit(1)
 	}
 
-	todo := h.fetchTodo(id)
-	todo.IsDone = !todo.IsDone
+	valueAsString := c.FormValue("isDone")
+	if len(valueAsString) == 0 {
+		fmt.Fprintf(os.Stderr, "`isDone` formValue must not be empty: %s\n", valueAsString)
+		os.Exit(1)
+	}
 
-	_, err := h.Db.Query("UPDATE todos SET is_done = ? WHERE id = ?", todo.IsDone, id)
+	value, err := strconv.ParseBool(valueAsString)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing `%s` as a boolean: %v\n", valueAsString, err)
+		os.Exit(1)
+	}
+
+	rows, err := h.Db.Query("UPDATE todos SET is_done = ?, updated_at = ? WHERE id = ? RETURNING *", !value, time.Now().UTC(), id)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error updating a TODO in database: %v\n", err)
 		os.Exit(1)
 	}
 
-	return routes.Render(c, RenderTodo(todo))
+	todos := ParseTodos(rows)
+	if len(todos) == 0 {
+		fmt.Fprintf(os.Stderr, "Failed to find todo with id '%s': %v\n", id, err)
+		os.Exit(1)
+	}
+
+	return routes.Render(c, RenderTodo(todos[0]))
 }
 
 func (h IndexHandler) fetchAllTodos() []Todo {
